@@ -12,13 +12,6 @@ if (!isset($_GET['data'])) {
 
 $data = trim($_GET['data']);
 
-// ================= CEK PREFIX RFID =================
-if (strpos($data, "rfid:") === 0) {
-    $data = substr($data, 5); // hapus "rfid:"
-}
-
-// ================= CEK APAKAH JSON =================
-$isJson = json_decode($data, true);
 // ================= AMBIL FIREBASE URL =================
 $db = "";
 $urlFile = 'firebase_url.txt';
@@ -49,54 +42,23 @@ if (file_exists($apiKeyFile)) {
     }
 }
 
-// ================= JIKA DATA JSON (RFID LOG) =================
-if ($isJson) {
-
-    // Ensure required fields exist
-    if (!isset($isJson['nama']) || !isset($isJson['uid']) || !isset($isJson['status'])) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing required fields: nama, uid, status"
-        ]);
-        exit;
-    }
-
-    // Build clean payload - data consistency
-    $payload = [
-        "nama" => trim($isJson['nama']),
-        "uid" => trim($isJson['uid']),
-        "status" => strtolower(trim($isJson['status'])),
-        "waktu_server" => date("Y-m-d H:i:s"),
-        "timestamp" => time()
-    ];
-
-    // key unik
-    $key = "entry" . time();
-
-    $url = $db . "/iot/rfid/log/" . $key . ".json" . $authParam;
-
-    $payload = json_encode($payload);
-
-} else {
-
-    // ================= FORMAT SENSOR BIASA =================
-    if (!strpos($data, ":")) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Format harus sensor:nilai"
-        ]);
-        exit;
-    }
-
-    list($sensor, $value) = explode(":", $data, 2);
-
-    if (is_numeric($value)) {
-        $value = $value + 0;
-    }
-
-    $url = $db . "/iot/" . urlencode($sensor) . ".json" . $authParam;
-    $payload = json_encode($value);
+// ================= FORMAT SENSOR BIASA =================
+if (!strpos($data, ":")) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "Format harus sensor:nilai"
+    ]);
+    exit;
 }
+
+list($sensor, $value) = explode(":", $data, 2);
+
+if (is_numeric($value)) {
+    $value = $value + 0;
+}
+
+$url = $db . "/iot/" . urlencode($sensor) . ".json" . $authParam;
+$payload = json_encode($value);
 
 // ================= KIRIM KE FIREBASE =================
 $ch = curl_init();
