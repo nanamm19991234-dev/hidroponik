@@ -1,5 +1,5 @@
 // Import Firebase SDKs dynamically as ES modules
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { initializeApp, getApps, deleteApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, onValue, set } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 // Configuration Form Toggle State
@@ -32,7 +32,7 @@ async function loadConfigAndConnect() {
         if (firebaseURL) {
             document.getElementById('firebase-url-input').value = firebaseURL;
             document.getElementById('firebase-key-input').value = firebaseAPIKey;
-            connectFirebase(firebaseURL, firebaseAPIKey);
+            await connectFirebase(firebaseURL, firebaseAPIKey);
         } else {
             document.getElementById('conn-status-dot').className = 'status-dot';
             document.getElementById('conn-status-text').textContent = 'Unconfigured';
@@ -88,7 +88,7 @@ function updateTableDBStatus(statusText, isOnline) {
     }
 }
 
-function connectFirebase(url, key) {
+async function connectFirebase(url, key) {
     if (!url) {
         document.getElementById('conn-status-dot').className = 'status-dot';
         document.getElementById('conn-status-text').textContent = 'Unconfigured';
@@ -98,6 +98,13 @@ function connectFirebase(url, key) {
 
     try {
         const firebaseConfig = getFirebaseConfig(url, key);
+        
+        // Clean up previous app instance to avoid duplicate app initialization error
+        const apps = getApps();
+        if (apps.length > 0) {
+            await deleteApp(apps[0]);
+        }
+        
         app = initializeApp(firebaseConfig);
         db = getDatabase(app);
 
@@ -188,11 +195,17 @@ document.getElementById('pump-toggle').addEventListener('click', () => {
         showToast("Error: Database is disconnected.", true);
         return;
     }
-    const targetState = !currentPumpState;
+    
+    // Determine current pump state directly from UI to make the toggle logic highly robust
+    const isCurrentlyOn = document.getElementById('pump-toggle').classList.contains('on');
+    const targetState = !isCurrentlyOn;
+    
     // Write value in expected standard data scheme (1 for ON, 0 for OFF)
     set(ref(db, 'iot/pump'), targetState ? 1 : 0)
         .then(() => {
             showToast(`Pump commanded ${targetState ? 'ON' : 'OFF'}`);
+            // Keep local state variable in sync
+            currentPumpState = targetState;
         })
         .catch(err => {
             showToast("Failed to toggle pump: " + err.message, true);
