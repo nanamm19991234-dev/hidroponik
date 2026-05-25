@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydroponic Monitoring Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <h1>Hydroponics</h1>
+                <p>Real-time ecosystem metrics</p>
+            </div>
+            <div class="status-badge">
+                <span id="conn-status-dot" class="status-dot"></span>
+                <span id="conn-status-text">Disconnected</span>
+            </div>
+        </header>
+
+        <!-- Settings Section -->
+        <section class="glass-card config-section">
+            <div class="config-header" id="config-toggle-btn">
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+                <h2>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                    </svg>
+                    Database Configuration
+                </h2>
+            </div>
+            
+            <div class="config-body" id="config-form-body">
+                <form id="config-form" class="form-grid">
+                    <div class="input-wrapper">
+                        <label for="firebase-url-input">Firebase Database URL</label>
+                        <input type="url" id="firebase-url-input" placeholder="https://your-project.firebaseio.com" required>
+                    </div>
+                    <div class="input-wrapper">
+                        <label for="firebase-key-input">Web API Key / Secret</label>
+                        <input type="password" id="firebase-key-input" placeholder="Optional Auth Key">
+                    </div>
+                    <button type="submit" class="btn-primary">Update Database Settings</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Main Dashboard Widgets -->
+        <main class="dashboard-grid">
+            
+            <!-- Water Level Widget -->
+            <section class="glass-card water-widget">
+                <div class="widget-header">
+                    <h3>Water Level</h3>
+                    <div class="widget-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="water-display">
+                    <span class="water-val"><span id="val-water-level">0</span><span class="water-unit">cm</span></span>
+                    <p>Ideal Height: 15cm - 20cm</p>
+                </div>
+            </section>
+
+            <!-- Pump Control Widget -->
+            <section class="glass-card pump-widget">
+                <div class="widget-header" style="width: 100%;">
+                    <h3>Water Pump</h3>
+                    <div class="widget-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                    </div>
+                </div>
+                <div id="pump-toggle" class="pump-circle-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                        <line x1="12" y1="2" x2="12" y2="12"></line>
+                    </svg>
+                    <span id="pump-state-text">OFF</span>
+                </div>
+                <p class="stat-desc" style="margin-top: 15px;">Toggle to override pump execution</p>
+            </section>
+
+            <!-- Status Table Widget -->
+            <section class="glass-card status-widget">
+                <div class="widget-header">
+                    <h3>System Status</h3>
+                    <div class="widget-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                            <line x1="15" y1="3" x2="15" y2="21"></line>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="3" y1="15" x2="21" y2="15"></line>
+                        </svg>
+                    </div>
+                </div>
+                <div class="status-table-wrapper">
+                    <table class="status-table">
+                        <tbody>
+                            <tr>
+                                <td class="status-label">Database</td>
+                                <td class="status-value"><span id="table-status-db" class="status-badge-inline keluar">Disconnected</span></td>
+                            </tr>
+                            <tr>
+                                <td class="status-label">Water Level</td>
+                                <td class="status-value"><span id="table-status-water" class="status-value-text">--cm</span></td>
+                            </tr>
+                            <tr>
+                                <td class="status-label">Water Pump</td>
+                                <td class="status-value"><span id="table-status-pump" class="status-badge-inline keluar">OFF</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">Configuration saved successfully!</div>
+
+    <!-- Import modern Firebase SDK scripts as ES Modules -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
